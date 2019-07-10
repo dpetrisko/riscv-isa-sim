@@ -48,7 +48,15 @@ static void commit_log_print_insn(state_t* state, reg_t pc, insn_t insn)
   fprintf(stderr, " (");
   commit_log_print_value(insn.length() * 8, 0, insn.bits());
 
-  if (reg.addr) {
+  // TODO: Only printing store for integers
+  bool store = ((insn.bits() & 0x00000000000007F) == 0b0100011);
+  if (store) {
+    int64_t rs1 = state->XPR[insn.rs1()];
+    int64_t rs2 = state->XPR[insn.rs2()];
+    int64_t imm = insn.s_imm();
+    fprintf(stderr, ") [%lx] %lx", rs1+imm, rs2);
+    fprintf(stderr, "\n");
+  } else if (reg.addr) {
     bool fp = reg.addr & 1;
     int rd = reg.addr >> 1;
     int size = fp ? flen : xlen;
